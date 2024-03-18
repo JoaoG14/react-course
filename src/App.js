@@ -7,9 +7,9 @@ function App() {
     <div className="App">
       {showEmployees ? (
         <>
-          <Employee />
-          <Employee />
-          <Employee />
+          <Employee name="Caleb" role="Intern"/>
+          <Employee name="Abby"/>
+          <Employee name="Jon"/>
           <Employee />
         </>
       ) : (
