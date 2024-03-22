@@ -1,7 +1,7 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import NotFound from '../components/NotFound'
-import { baseUrl } from '../shared'
+import NotFound from "../components/NotFound";
+import { baseUrl } from "../shared";
 
 export default function Customer() {
   const { id } = useParams();
@@ -21,6 +21,7 @@ export default function Customer() {
         setCustomer(data.customer);
       });
   }, []);
+
   return (
     <>
       {notFound ? <p>The customer with id {id} was not found</p> : null}
@@ -31,6 +32,25 @@ export default function Customer() {
           <p>{customer.industry}</p>
         </div>
       ) : null}
+      <button
+        onClick={() => {
+          const url = baseUrl + "api/customers/" + id;
+          fetch(url, { method: "DELETE", headers: {
+            'Contetn-Type': 'applications/json'
+          } })
+            .then((response) => {
+              if (!response.ok) {
+                throw new Error("Something went wrong");
+              }
+              navigate('/customers')
+            })
+            .catch((e) => {
+              console.log(e);
+            });
+        }}
+      >
+        Delete
+      </button>
       <Link to="/customers">Go back</Link>
     </>
   );
