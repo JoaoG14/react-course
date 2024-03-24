@@ -1,7 +1,8 @@
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useDebugValue, useEffect, useState } from "react";
 import NotFound from "../components/NotFound";
 import { baseUrl } from "../shared";
+import { X } from "lucide";
 
 export default function Customer() {
   const { id } = useParams();
@@ -10,6 +11,7 @@ export default function Customer() {
   const [tempCustomer, setTempCustomer] = useState();
   const [notFound, setNotFound] = useState();
   const [changed, setChanged] = useState(false);
+  const [error, setError] = useState();
 
   useEffect(() => {
     if (!customer) return;
@@ -31,11 +33,20 @@ export default function Customer() {
         if (response.status === 404 || response.status === 500) {
           setNotFound(true);
         }
+
+        if (!response.ok) {
+          throw new Error("Something went wrong, try again later");
+        }
+
         return response.json();
       })
       .then((data) => {
         setCustomer(data.customer);
         setTempCustomer(data.customer);
+        setError(undefined);
+      })
+      .catch((e) => {
+        setError(e.message);
       });
   }, []);
 
@@ -49,12 +60,16 @@ export default function Customer() {
       body: JSON.stringify(tempCustomer),
     })
       .then((response) => {
+        if (!response.ok) throw new Error("something went wrong");
         return response.json();
       })
       .then((data) => {
         setCustomer(data.customer);
         setChanged(false);
-        console.log(data);
+        setError(undefined);
+      })
+      .catch((e) => {
+        setError(e.message);
       });
   }
 
@@ -115,7 +130,7 @@ export default function Customer() {
                   navigate("/customers");
                 })
                 .catch((e) => {
-                  console.log(e);
+                  setError(e.message)
                 });
             }}
           >
@@ -123,6 +138,7 @@ export default function Customer() {
           </button>
         </div>
       ) : null}
+      {error ? <p>{error}</p> : null}
       <Link to="/customers">Go back</Link>
     </>
   );
