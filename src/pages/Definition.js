@@ -1,57 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useLocation } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 import NotFound from "../components/NotFound";
 import DefinitionSearch from "../components/DefinitionSearch";
+import useFetch from "../hooks/UseFetch";
 
 export default function Definition() {
-  const [word, setWord] = useState();
-  const [notFound, setNotFound] = useState(false);
-  const [error, setError] = useState(false);
-
+  // const [word, setWord] = useState();
+  // const [notFound, setNotFound] = useState(false);
+  // const [error, setError] = useState(false);
   let { search } = useParams();
+
+  const location = useLocation();
   const navigate = useNavigate();
+  const { data: [{ meanings: word }] = [{}], errorStatus } = useFetch(
+    "https://api.dictionaryapi.dev/api/v2/entries/en/" + search,
+    { method: "GET" }
+  );
 
   useEffect(() => {
-    fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + search)
-      .then((response) => {
-        if (response.status === 404) {
-          setNotFound(true);
-        } else if (response.status === 401) {
-          navigate("/login");
-        }
-        if (!response.ok) {
-          setError(true);
+    request();
+  }) 
 
-          throw new Error("Something went wrong");
-        }
-        return response.json();
-      })
-
-      .then((data) => {
-        setWord(data[0].meanings);
-      })
-      .catch((e) => {
-        console.log(e.message)
-      })
-  }, []);
-
-  if (notFound === true) {
+  if (errorStatus === 404) {
     return (
       <>
         <NotFound />
-        <Link to="/dictionar">Search another</Link>
+        <Link to="/dictionary">Search another</Link>
       </>
     );
   }
-  if (error === true) {
+  if (errorStatus) {
     return (
       <>
         <p>Something went wrong, try again</p>
-        <Link to="/dictionar">Search another</Link>
+        <Link to="/dictionary">Search another</Link>
       </>
     );
   }
+
   return (
     <>
       {word ? (
